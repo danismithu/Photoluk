@@ -1,2 +1,2 @@
 # Photoluk
-A simple application that uses the Unsplash API.
+A simple Android application that uses the Unsplash API.
