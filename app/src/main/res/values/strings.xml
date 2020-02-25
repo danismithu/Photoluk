@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Photoluk</string>
+    <string name="explorar">Explorar</string>
+    <string name="favoritos">Favoritos</string>
 </resources>
