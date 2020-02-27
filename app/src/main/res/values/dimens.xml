@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="thumb_up_icon">24dp</dimen>
+    <dimen name="fav_icon">32dp</dimen>
+    <dimen name="mini_user_img">36dp</dimen>
+
+    <!-- TEXT SIZES -->
+    <dimen name="info_text">16sp</dimen>
+</resources>
