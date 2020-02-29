@@ -59,6 +59,9 @@ class ImagesAdapter(private val screenWidth: Int, private val context: Context, 
                     imageData.delete()
                     notifyItemChanged(position)
                 } else {
+                    //Para el futuro, al momento que se elimina la última imagen no aparece el mensaje que no se tienen
+                    // favoritos hasta que se recarga la página. Se debe de realizar un método que recargue populate
+                    // cuando la lista esté vacía
                     imageList.remove(imageData)
                     imageData.delete()
                     notifyDataSetChanged()

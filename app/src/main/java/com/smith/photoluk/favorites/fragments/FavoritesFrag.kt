@@ -22,7 +22,7 @@ class FavoritesFrag : Fragment() {
 
     private lateinit var favoritesFragBinding: FavoritesFragBinding
     private lateinit var viewModel: FavoritesViewModel
-    private val favoritesImageList: ArrayList<ImageData> = ArrayList()
+    private var favoritesImageList: ArrayList<ImageData> = ArrayList()
 
     private lateinit var manager: StaggeredGridLayoutManager
     private lateinit var recyclerView: RecyclerView
@@ -71,14 +71,27 @@ class FavoritesFrag : Fragment() {
         if (adapter != null) {
             viewModel.getFavoriteImages()
         } else {
-            adapter = ImagesAdapter(width, context!!, false, object : CustomClickListener {
-                override fun onClick(view: View, position: Int) { //Al momento de hacer click sobre la imagen
-                    launchImageDetail((favoritesFragBinding.favsList.adapter as ImagesAdapter).getImageList()[position])
-                }
-            })
-            adapter!!.setImageList(favoritesImageList)
-            recyclerView.adapter = adapter
+            setAdapter()
         }
+    }
+
+    fun queryImageByUser(query: String) {
+        if (adapter != null) {
+            favoritesImageList = ArrayList()
+            viewModel.getFavoriteQuery(query)
+        } else {
+            setAdapter()
+        }
+    }
+
+    private fun setAdapter() {
+        adapter = ImagesAdapter(width, context!!, false, object : CustomClickListener {
+            override fun onClick(view: View, position: Int) { //Al momento de hacer click sobre la imagen
+                launchImageDetail((favoritesFragBinding.favsList.adapter as ImagesAdapter).getImageList()[position])
+            }
+        })
+        adapter!!.setImageList(favoritesImageList)
+        recyclerView.adapter = adapter
     }
 
     private fun launchImageDetail(imageData: ImageData) {
@@ -102,6 +115,8 @@ class FavoritesFrag : Fragment() {
     }
 
     fun showMessage(msg: String) {
-        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+        activity!!.runOnUiThread {
+            Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+        }
     }
 }

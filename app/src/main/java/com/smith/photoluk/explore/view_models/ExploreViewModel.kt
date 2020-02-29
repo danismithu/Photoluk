@@ -7,12 +7,11 @@ import android.util.Log
 import com.smith.photoluk.explore.fragments.ExploreFrag
 import com.smith.photoluk.explore.repository.ExploreRepository
 import com.smith.photoluk.explore.request.ImageDataRequest
+import com.smith.photoluk.explore.response.ErrorsResponse
+import com.smith.photoluk.explore.response.ImageDataQueryResponse
 import com.smith.photoluk.explore.response.ImageDataResponse
 import com.smith.photoluk.explore.services.ExploreServiceImpl
 import com.smith.photoluk.models.ImageData
-import com.smith.photoluk.models.ProfileImages
-import com.smith.photoluk.models.Urls
-import com.smith.photoluk.models.UserInfo
 import com.smith.photoluk.utils.api.RestClient
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.RequestCreator
@@ -24,7 +23,7 @@ import retrofit2.Response
 import java.lang.Exception
 import kotlin.coroutines.CoroutineContext
 
-class ExploreViewModel(private val exploreFrag: ExploreFrag) : ViewModel() {
+class ExploreViewModel(private val exploreFrag: ExploreFrag, private val clientId: String) : ViewModel() {
 
     private val parentJob = Job()
     private val coroutineContext: CoroutineContext
@@ -46,7 +45,6 @@ class ExploreViewModel(private val exploreFrag: ExploreFrag) : ViewModel() {
     //Setup para realizar la búsqueda
     fun getImagesFeed(page: Int) {
         imagesLiveData = MutableLiveData()
-        val clientId = "**********************" //Ingresar su propio unstash clientId
 
         val request = ImageDataRequest()
         request.clientId = clientId
@@ -54,6 +52,27 @@ class ExploreViewModel(private val exploreFrag: ExploreFrag) : ViewModel() {
 
         loading = true
         fetchImagesFeed(request)
+        imagesLiveData.observe(exploreFrag, Observer {
+            val response = imagesLiveData.value
+            if (response != null) {
+                fetchingComplete(response)
+            } else {
+                Log.e("FETCHING_ERROR", "$FETCHING_ERROR: La respuesta es null")
+                fetchingFeedFailed(FETCHING_ERROR)
+            }
+        })
+    }
+
+    fun queryImagesFeed(page: Int, query: String) {
+        imagesLiveData = MutableLiveData()
+
+        val request = ImageDataRequest()
+        request.clientId = clientId
+        request.page = page
+        request.query = query
+
+        loading = true
+        fetchImagesByQuery(request)
         imagesLiveData.observe(exploreFrag, Observer {
             val response = imagesLiveData.value
             if (response != null) {
@@ -89,6 +108,47 @@ class ExploreViewModel(private val exploreFrag: ExploreFrag) : ViewModel() {
                             }
                         }
                         fetchingFeedSuccess(imageDataResponse.body()!!)
+                    } else {
+                        Log.e("FETCHING_ERROR", "$FETCHING_ERROR: La respuesta tiene código: " +
+                                "${imageDataResponse.code()} - ${imageDataResponse.message()}")
+                        fetchingFeedFailed(imageDataResponse.message())
+                    }
+                } else {
+                    val errorsResponse: Response<ErrorsResponse>? = exploreService.getImageErrors(request)
+
+                    if (errorsResponse != null) {
+                        fetchingFeedFailed(errorsResponse.body()!!.errors)
+                    }
+
+                    Log.e("FETCHING_ERROR", "$FETCHING_ERROR: La respuesta es null")
+                    fetchingFeedFailed(FETCHING_ERROR)
+                }
+            } catch (e: Exception) {
+                Log.e("FETCHING_ERROR", "$FETCHING_ERROR: ${e.message}")
+                fetchingFeedFailed(FETCHING_ERROR)
+            }
+        }
+    }
+
+    //Coroutine para obtener el listado de imágenes según lo ingresado por el usuario
+    private fun fetchImagesByQuery(request: ImageDataRequest) {
+        scope.launch {
+            try {
+                val imageDataResponse: Response<ImageDataQueryResponse>? = exploreService.getImageQueryFeed(request)
+                if (imageDataResponse != null) {
+                    if (imageDataResponse.code() == 200) {
+                        Log.d("FETCHING_SUCCESS", "Se han recuperado las imágenes filtradas satisfactoriamente.")
+
+                        //Buscar si existen imágenes guardadas, lo que significa que están agregadas como favoritos para
+                        // agregarle el corazón a la imagen en la pantalla de explorar
+                        for (imageData in imageDataResponse.body()!!.results) {
+                            val savedImages: List<ImageData>? = exploreService.getImageByUnsplashId(imageData.id)
+                            if (savedImages != null && savedImages.isNotEmpty()) {
+                                imageData.isFavorite = savedImages[0].isFavorite
+                                imageData.internalId = savedImages[0].id
+                            }
+                        }
+                        fetchingFeedSuccess(imageDataResponse.body()!!.results)
                     } else {
                         Log.e("FETCHING_ERROR", "$FETCHING_ERROR: La respuesta tiene código: " +
                                 "${imageDataResponse.code()} - ${imageDataResponse.message()}")
@@ -160,8 +220,16 @@ class ExploreViewModel(private val exploreFrag: ExploreFrag) : ViewModel() {
         viewCallback!!.showMessage(message)
     }
 
-    private fun fetchingFeedFailed(message: List<String>?) {
+    private fun fetchingFeedFailed(messages: List<String>?) {
+        loading = false
+        var fullMsg = ""
 
+        if (messages != null) {
+            for (msg in messages) {
+                fullMsg += " $msg,"
+            }
+        }
+        viewCallback!!.showMessage(fullMsg)
     }
 
     fun onViewAttached(viewCallback: ExploreFrag) {

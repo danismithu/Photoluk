@@ -24,4 +24,19 @@ class FavoritesRepository {
             }
         }
     }
+
+    fun getQueryFavoriteAsync(param: String): Deferred<Result<List<ImageData>>> {
+        return GlobalScope.async {
+            try {
+                // Obtener las imágenes guardadas según el nombre de usuario o el nombre de la persona
+                val query = "SELECT * FROM imageData WHERE userName LIKE '%$param%' OR name LIKE '%$param%'"
+                val savedImages: List<ImageData> = SugarRecord.findWithQuery(ImageData::class.java, query).toList()
+                Log.d("QUERY_FAV", "Favoritos filtrados recuperados: $savedImages")
+
+                Result.Success(savedImages)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
+        }
+    }
 }

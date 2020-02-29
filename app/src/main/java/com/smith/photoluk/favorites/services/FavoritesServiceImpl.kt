@@ -11,4 +11,11 @@ class FavoritesServiceImpl(private val favoritesRepository: FavoritesRepository)
             errorMessage = "Error obteniendo las imágenes favoritas"
         )
     }
+
+    override suspend fun getQueryFavorite(query: String): List<ImageData>? {
+        return safeApiCall(
+            call = { favoritesRepository.getQueryFavoriteAsync(query).await() },
+            errorMessage = "Error obteniendo las imágenes favoritas filtradas"
+        )
+    }
 }

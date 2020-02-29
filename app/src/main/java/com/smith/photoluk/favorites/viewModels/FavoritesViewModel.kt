@@ -52,9 +52,20 @@ class FavoritesViewModel(private val favoritesFrag: FavoritesFrag): ViewModel() 
         })
     }
 
-    fun isSomethingLoading(imageList: List<ImageData>): Boolean {
-        val areImagesLoading: Boolean = imageList.any{ isLoading -> isLoading.isLoading }
-        return areImagesLoading || loading
+    fun getFavoriteQuery(query: String) {
+        imagesLiveData = MutableLiveData()
+
+        loading = true
+        fetchFavoriteQuery(query)
+        imagesLiveData.observe(favoritesFrag, Observer {
+            val response = imagesLiveData.value
+            if (response != null) {
+                fetchingComplete(response)
+            } else {
+                Log.e("FETCHING_ERROR", "$FETCHING_FAV_ERROR: La respuesta es null")
+                fetchingFavoritesFailed(FETCHING_FAV_ERROR)
+            }
+        })
     }
 
     private fun fetchFavoriteImages() {
@@ -64,6 +75,24 @@ class FavoritesViewModel(private val favoritesFrag: FavoritesFrag): ViewModel() 
                 if (favoritesImages != null) {
                     Log.d("FETCHING_SUCCESS", "Se han recuperado las imágenes favoritas satisfactoriamente.")
                     fetchingFavoritesSuccess(favoritesImages)
+                } else {
+                    Log.e("FETCHING_ERROR", "${FETCHING_FAV_ERROR}: La respuesta es null")
+                    fetchingFavoritesFailed(FETCHING_FAV_ERROR)
+                }
+            } catch (e: Exception) {
+                Log.e("FETCHING_ERROR", "${FETCHING_FAV_ERROR}: ${e.message}")
+                fetchingFavoritesFailed(FETCHING_FAV_ERROR)
+            }
+        }
+    }
+
+    private fun fetchFavoriteQuery(query: String) {
+        scope.launch {
+            try {
+                val queryFavoriteImages: List<ImageData>? = favoritesService.getQueryFavorite(query)
+                if (queryFavoriteImages != null) {
+                    Log.d("FETCHING_SUCCESS", "Se han recuperado las imágenes favoritas filtradas satisfactoriamente.")
+                    fetchingFavoritesSuccess(queryFavoriteImages)
                 } else {
                     Log.e("FETCHING_ERROR", "${FETCHING_FAV_ERROR}: La respuesta es null")
                     fetchingFavoritesFailed(FETCHING_FAV_ERROR)

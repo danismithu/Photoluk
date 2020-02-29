@@ -7,4 +7,5 @@
     <string name="no_hay_favs">NO TIENES FAVORITOS ¡AGREGA IMÁGENES A TUS FAVORITOS!</string>
     <string name="perfil">Perfil:</string>
     <string name="filtrar">filtrar</string>
+    <string name="clientId">***************</string> //Ingresar su propio unstash clientId
 </resources>
