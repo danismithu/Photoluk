@@ -6,8 +6,8 @@ import com.smith.photoluk.utils.models.Result
 import java.io.IOException
 
 open class BaseRepository {
-    suspend fun <T: Any> safeApiCall(call: suspend () -> Response<T>, errorMessage: String): T? {
-        val result: Result<T> = safeApiResult(call, errorMessage)
+    suspend fun <T: Any> safeApiCall(call: suspend () -> Result<T>, errorMessage: String): T? {
+        val result: Result<T> = call.invoke()
         var data: T? = null
 
         when(result) {

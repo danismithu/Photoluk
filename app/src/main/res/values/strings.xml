@@ -4,4 +4,7 @@
     <string name="favoritos">Favoritos</string>
     <string name="imagen_recuperada">Imagen recuperada</string>
     <string name="imagen_perfil_usuario">Imagen de perfil de usuario</string>
+    <string name="no_hay_favs">NO TIENES FAVORITOS ¡AGREGA IMÁGENES A TUS FAVORITOS!</string>
+    <string name="perfil">Perfil:</string>
+    <string name="filtrar">filtrar</string>
 </resources>

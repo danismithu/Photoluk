@@ -1,7 +1,7 @@
 package com.smith.photoluk.utils.api
 
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import com.smith.photoluk.explore.api.ExploreImageAPI
+import com.smith.photoluk.explore.services.ExploreImageAPI
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

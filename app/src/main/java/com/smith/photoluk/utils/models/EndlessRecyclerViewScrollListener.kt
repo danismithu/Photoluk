@@ -3,7 +3,7 @@ package com.smith.photoluk.utils.models
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.util.Log
-import com.smith.photoluk.explore.models.ImageData
+import com.smith.photoluk.models.ImageData
 import com.smith.photoluk.explore.view_models.ExploreViewModel
 
 abstract class EndlessRecyclerViewScrollListener(private val layourManager: StaggeredGridLayoutManager,

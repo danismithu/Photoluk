@@ -6,4 +6,9 @@
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="bkg_light_grey">#E0E0E0</color>
+    <color name="light_grey">#C0C0C0</color>
+    <color name="light_black">#808080</color>
+    <color name="fade_grey">#33A0A0A0</color>
+    <color name="fade_light_grey">#CCFFFFFF</color>
 </resources>

@@ -3,7 +3,11 @@
     <dimen name="thumb_up_icon">24dp</dimen>
     <dimen name="fav_icon">32dp</dimen>
     <dimen name="mini_user_img">36dp</dimen>
+    <dimen name="user_img">64dp</dimen>
+    <dimen name="progressbar_bkg">128dp</dimen>
 
     <!-- TEXT SIZES -->
+    <dimen name="small_info_text">12sp</dimen>
     <dimen name="info_text">16sp</dimen>
+    <dimen name="title_text">32sp</dimen>
 </resources>

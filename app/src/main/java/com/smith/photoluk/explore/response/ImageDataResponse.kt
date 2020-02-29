@@ -1,19 +1,25 @@
 package com.smith.photoluk.explore.response
 
 import com.smith.photoluk.utils.models.GenericResponse
-import com.smith.photoluk.utils.models.Urls
-import com.smith.photoluk.utils.models.UserInfo
 
 data class ImageDataResponse (
+
+    var id: String,
 
     var width: Int,
 
     var height: Int,
 
-    var urls: Urls,
+    var urls: UrlsResponse,
 
     var likes: Int,
 
-    var user: UserInfo
+    var user: UserInfoResponse,
+
+    //Uso interno de favoritos
+    var isFavorite: Boolean,
+
+    //Uso interno del id guardado en la DB
+    var internalId: Long
 
 ) : GenericResponse()

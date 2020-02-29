@@ -1,43 +1,37 @@
 package com.smith.photoluk.explore.fragments
 
+import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.smith.photoluk.databinding.ExploreActivityBinding
-import com.smith.photoluk.explore.list.ImageFeedAdapter
-import com.smith.photoluk.explore.models.ImageData
+import com.smith.photoluk.databinding.ExploreFragBinding
+import com.smith.photoluk.detailImage.DetailImageActivity
 import com.smith.photoluk.explore.view_models.ExploreViewModel
-import com.smith.photoluk.utils.models.EndlessRecyclerViewScrollListener
-import kotlin.math.roundToInt
+import com.smith.photoluk.models.ImageData
+import com.smith.photoluk.utils.CustomClickListener
+import com.smith.photoluk.utils.list.ImagesAdapter
 
 class ExploreFrag : Fragment() {
 
-    private lateinit var exploreFragBinding: ExploreActivityBinding
+    private lateinit var exploreFragBinding: ExploreFragBinding
     private lateinit var viewModel: ExploreViewModel
-    private val globalImageList: ArrayList<ImageData> = ArrayList()
+    private val feedImageList: ArrayList<ImageData> = ArrayList()
 
     private lateinit var manager: StaggeredGridLayoutManager
     private lateinit var recyclerView: RecyclerView
+    private var adapter: ImagesAdapter? = null
+
     private var width: Int = 0
 
     /****** ENDLESS ******/
     var page = 1
-    var isLoading = false
-    var limit = 10
-
-    private var adapter: ImageFeedAdapter? = null
-
-
-    private val numberList: ArrayList<String> = ArrayList()
     /*********************/
 
     companion object {
@@ -48,7 +42,7 @@ class ExploreFrag : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        exploreFragBinding = ExploreActivityBinding.inflate(inflater, container, false)
+        exploreFragBinding = ExploreFragBinding.inflate(inflater, container, false)
 
         viewModel = ExploreViewModel(this)
         viewModel.onViewAttached(this)
@@ -67,9 +61,12 @@ class ExploreFrag : Fragment() {
 
         recyclerView.layoutManager = manager
 
+        exploreFragBinding.progressLoading.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+
         getPage()
 
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        /*recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy > 0) {
                     val visibleItemCount = manager.childCount
@@ -80,10 +77,6 @@ class ExploreFrag : Fragment() {
 
                     val totalItem = adapter!!.itemCount
 
-                    Log.d("SCROLLDATA", "totalItem $totalItem")
-                    Log.d("SCROLLDATA", "lastVisibleItemPosition $lastVisibleItemPosition")
-                    Log.d("SCROLLDATA", "visibleItemCount $visibleItemCount")
-
                     if (!viewModel.isSomethingLoading(globalImageList))  {
                         if ((lastVisibleItemPosition + 1) >= totalItem) {
                             page++
@@ -92,14 +85,14 @@ class ExploreFrag : Fragment() {
                     }
                 }
             }
-        })
+        })*/
         return exploreFragBinding.root
     }
 
     private fun getLastVisibleItem(lastVisibleItems: IntArray): Int {
         var maxSize = 0
 
-        for (i in 0 until lastVisibleItems.size) {
+        for (i in lastVisibleItems.indices) {
             if (i == 0) {
                 maxSize = lastVisibleItems[i]
             } else if (lastVisibleItems[i] > maxSize) {
@@ -113,19 +106,33 @@ class ExploreFrag : Fragment() {
         if (adapter != null) {
             viewModel.getImagesFeed(page)
         } else {
-            adapter = ImageFeedAdapter(width)
-            adapter!!.setImageList(globalImageList)
+            adapter = ImagesAdapter(width, context!!, true, object : CustomClickListener {
+                override fun onClick(view: View, position: Int) { //Al momento de hacer click sobre la imagen
+                    launchImageDetail((exploreFragBinding.imageFeedList.adapter as ImagesAdapter).getImageList()[position])
+                }
+            })
+            adapter!!.setImageList(feedImageList)
             recyclerView.adapter = adapter
         }
     }
 
-    fun populateFeed(imageList: List<ImageData>, lastPage: Int) {
+    private fun launchImageDetail(imageData: ImageData) {
+        val intent = Intent(activity, DetailImageActivity::class.java)
+        intent.putExtra("imageData", imageData)
+        startActivity(intent)
+    }
 
-        globalImageList.addAll(imageList)
+    fun populateFeed(imageList: List<ImageData>) {
+        exploreFragBinding.progressLoading.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
 
-        adapter!!.setImageList(globalImageList)
+        feedImageList.addAll(imageList)
+
+        adapter!!.setImageList(feedImageList)
         adapter!!.notifyDataSetChanged()
     }
 
-
+    fun showMessage(msg: String) {
+        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+    }
 }
